@@ -1,198 +1,489 @@
 <!DOCTYPE html>
 <html>
- 
-<head>
-    <title>Calculator</title>
-</head>
- 
-<body
-    style="display:flex;justify-content:center;align-items:flex-start;height:100vh;background:#f4f4f4;font-family:Arial;padding:20px;">
- 
-    <!-- Calculator Section -->
-    <div
-        style="width:320px;background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,0.2);margin-right:20px;">
-        <!-- Display -->
- 
-        <input id="display" type="text"
-            style="width:100%;height:58px;background:#222;color:#fff;font-size:24px;text-align:right;padding:10px;border-radius:5px;margin-bottom:15px;border:none;box-sizing:border-box;"
-            value="0" autofocus />
- 
- 
-        <!-- Buttons -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;">
-            <button onclick="clearDisplay()"
-                style="padding:15px;font-size:18px;border:none;background:#ddd;border-radius:5px;">C</button>
-            <button onclick="backspace()"
-                style="padding:15px;font-size:18px;border:none;background:#ddd;border-radius:5px;">⌫</button>
-            <button onclick="append('%')"
-                style="padding:15px;font-size:18px;border:none;background:#ddd;border-radius:5px;">%</button>
-            <button onclick="append('/')"
-                style="padding:15px;font-size:18px;border:none;background:#ff9500;color:#fff;border-radius:5px;">÷</button>
-        </div>
- 
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-            <button onclick="append('7')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">7</button>
-            <button onclick="append('8')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">8</button>
-            <button onclick="append('9')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">9</button>
-            <button onclick="append('*')"
-                style="padding:15px;font-size:18px;border:none;background:#ff9500;color:#fff;border-radius:5px;">×</button>
- 
-            <button onclick="append('4')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">4</button>
-            <button onclick="append('5')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">5</button>
-            <button onclick="append('6')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">6</button>
-            <button onclick="append('-')"
-                style="padding:15px;font-size:18px;border:none;background:#ff9500;color:#fff;border-radius:5px;">−</button>
- 
-            <button onclick="append('1')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">1</button>
-            <button onclick="append('2')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">2</button>
-            <button onclick="append('3')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">3</button>
-            <button onclick="append('+')"
-                style="padding:15px;font-size:18px;border:none;background:#ff9500;color:#fff;border-radius:5px;">+</button>
- 
-            <button onclick="append('0')"
-                style="grid-column:span 2;padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">0</button>
-            <button onclick="append('.')"
-                style="padding:15px;font-size:18px;border:none;background:#eee;border-radius:5px;">.</button>
-            <button onclick="calculate()"
-                style="padding:15px;font-size:18px;border:none;background:#ff9500;color:#fff;border-radius:5px;">=</button>
-        </div>
-    </div>
- 
-    <!-- History Section -->
-    <div style="width:300px;background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-        <h3 style="margin:0 0 10px;font-size:18px;">History</h3>
-        <ul id="historyList" style="list-style:none;padding:0;margin:0;max-height:400px;overflow-y:auto;"></ul>
-        <button onclick="clearHistory()"
-            style="margin-top:10px;padding:10px;width:100%;border:none;background:#dc3545;color:#fff;border-radius:5px;font-size:16px;">Clear
-            All</button>
-    </div>
- 
-    <script>
-        let display = document.getElementById('display');
-        let currentInput = '';
-        const operators = ['+', '-', '*', '/', '%'];
- 
-        // Append logic with operator & decimal validation
-        function append(value) {
-            if (operators.includes(value)) {
-                if (currentInput === '' || operators.includes(currentInput.slice(-1))) return;
-            }
-            if (value === '.') {
-                let parts = currentInput.split(/[\+\-\*\/%]/);
-                let lastPart = parts[parts.length - 1];
-                if (lastPart.includes('.')) return;
-            }
-            if (display.value === '0' && value !== '.') {
-                currentInput = value;
-            } else {
-                currentInput += value;
-            }
-            display.value = currentInput;
-        }
- 
-        function clearDisplay() {
-            currentInput = '';
-            display.value = '0';
-        }
- 
-        function backspace() {
-            if (currentInput.length > 0) {
-                currentInput = currentInput.slice(0, -1);
-                display.value = currentInput || '0';
-            }
-        }
- 
-        function calculate() {
-            try {
-                if (/\/0(?!\.)/.test(currentInput)) {
-                    display.value = 'Error: ÷0';
-                    currentInput = '';
-                    return;
-                }
-                let result = eval(currentInput.replace('%', '/100'));
-                display.value = result;
-                saveToHistory(currentInput, result);
-                currentInput = result.toString();
-            } catch (error) {
-                display.value = 'Error';
-                currentInput = '';
-            }
-        }
- 
-        // History functions
-        function saveToHistory(expression, result) {
-            let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
-            history.push({ expression, result });
-            localStorage.setItem('calcHistory', JSON.stringify(history));
-            renderHistory();
-        }
- 
-        function renderHistory() {
-            let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
-            let historyList = document.getElementById('historyList');
-            historyList.innerHTML = '';
-            history.forEach((item, index) => {
-                let li = document.createElement('li');
-                li.style = "padding:5px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;";
-                li.innerHTML = `
-      <span>${item.expression} = ${item.result}</span>
-      <div>
-        <button onclick="editHistory(${index})" style="padding:5px 10px;font-size:12px;border:none;background:#007bff;color:#fff;border-radius:4px;margin-right:5px;">Edit</button>
-        <button onclick="deleteHistory(${index})" style="padding:5px 10px;font-size:12px;border:none;background:#dc3545;color:#fff;border-radius:4px;">Delete</button>
-      </div>
-    `;
-                historyList.appendChild(li);
-            });
-        }
- 
-        function editHistory(index) {
-            let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
-            currentInput = history[index].expression;
-            display.value = currentInput;
-        }
- 
-        function deleteHistory(index) {
-            let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
-            history.splice(index, 1);
-            localStorage.setItem('calcHistory', JSON.stringify(history));
-            renderHistory();
-        }
- 
-        function clearHistory() {
-            localStorage.removeItem('calcHistory');
-            renderHistory();
-        }
- 
-        // Keyboard support
-        document.addEventListener('keydown', (e) => {
-            if (!isNaN(e.key) || operators.includes(e.key) || e.key === '.') {
-                e.preventDefault();
-                append(e.key);
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                calculate();
-            } else if (e.key === 'Backspace') {
-                e.preventDefault();
-                backspace();
-            } else if (e.key === 'Escape') {
-                e.preventDefault();
-                clearDisplay();
-            } else if (e.key === 'Tab') {
-                e.preventDefault(); // Stop focus change
-                clearDisplay();     // Clear the display
-            }
-        });
-        window.onload = renderHistory;
-    </script>
-</body>
- 
+  <head>
+    <title>Calculator</title>
+  </head>
+  <body
+    style="
+      background: #f4f4f4;
+      font-family: Arial;
+      margin: 0;
+      min-height: 100vh;
+    "
+  >
+    <div
+      style="
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        gap: 32px;
+        padding: 40px 16px;
+      "
+    >
+      <!-- Calculator Section -->
+      <div
+        style="
+          width: 320px;
+          background: #fff;
+          padding: 24px 20px 24px 20px;
+          border-radius: 14px;
+          box-shadow: 0 4px 17px rgba(0, 0, 0, 0.13);
+        "
+      >
+        <!-- Display -->
+        <input
+          id="display"
+          type="text"
+          value="0"
+          autofocus
+          style="
+            width: 100%;
+            height: 54px;
+            background: #222;
+            color: #fff;
+            font-size: 26px;
+            text-align: right;
+            padding: 10px 14px;
+            border-radius: 7px;
+            margin-bottom: 18px;
+            border: none;
+            box-sizing: border-box;
+            outline: none;
+          "
+        />
+
+        <!-- Buttons -->
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 10px;
+          "
+        >
+          <button
+            onclick="clearDisplay()"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #ddd;
+              border-radius: 6px;
+            "
+          >
+            C
+          </button>
+          <button
+            onclick="backspace()"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #ddd;
+              border-radius: 6px;
+            "
+          >
+            ⌫
+          </button>
+          <button
+            onclick="append('%')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #ddd;
+              border-radius: 6px;
+            "
+          >
+            %
+          </button>
+          <button
+            onclick="append('/')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #ff9500;
+              color: #fff;
+              border-radius: 6px;
+            "
+          >
+            ÷
+          </button>
+        </div>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+          "
+        >
+          <!-- Row 2 -->
+          <button
+            onclick="append('7')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            7
+          </button>
+          <button
+            onclick="append('8')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            8
+          </button>
+          <button
+            onclick="append('9')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            9
+          </button>
+          <button
+            onclick="append('*')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #ff9500;
+              color: #fff;
+              border-radius: 6px;
+            "
+          >
+            ×
+          </button>
+
+          <!-- Row 3 -->
+          <button
+            onclick="append('4')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            4
+          </button>
+          <button
+            onclick="append('5')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            5
+          </button>
+          <button
+            onclick="append('6')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            6
+          </button>
+          <button
+            onclick="append('-')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #ff9500;
+              color: #fff;
+              border-radius: 6px;
+            "
+          >
+            −
+          </button>
+
+          <!-- Row 4 -->
+          <button
+            onclick="append('1')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            1
+          </button>
+          <button
+            onclick="append('2')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            2
+          </button>
+          <button
+            onclick="append('3')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            3
+          </button>
+          <button
+            onclick="append('+')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #ff9500;
+              color: #fff;
+              border-radius: 6px;
+            "
+          >
+            +
+          </button>
+
+          <!-- Row 5 -->
+          <button
+            onclick="append('0')"
+            style="
+              grid-column: span 2;
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            0
+          </button>
+          <button
+            onclick="append('.')"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #eee;
+              border-radius: 6px;
+            "
+          >
+            .
+          </button>
+          <button
+            onclick="calculate()"
+            style="
+              padding: 16px;
+              font-size: 18px;
+              border: none;
+              background: #ff9500;
+              color: #fff;
+              border-radius: 6px;
+            "
+          >
+            =
+          </button>
+        </div>
+      </div>
+      <!-- History Section -->
+      <div
+        style="
+          width: 300px;
+          background: #fff;
+          padding: 24px 16px 24px 16px;
+          border-radius: 14px;
+          box-shadow: 0 4px 17px rgba(0, 0, 0, 0.13);
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <h3
+          style="
+            margin: 0 0 16px 0;
+            font-size: 19px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+          "
+        >
+          History
+        </h3>
+        <ul
+          id="historyList"
+          style="
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            background: #fafbfc;
+            overflow-y: auto;
+          "
+        ></ul>
+        <button
+          onclick="clearHistory()"
+          style="
+            margin-top: 16px;
+            padding: 12px 0;
+            width: 100%;
+            border: none;
+            background: #dc3545;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+          "
+        >
+          Clear All
+        </button>
+      </div>
+    </div>
+    <!-- Keep the original JavaScript here -->
+    <script>
+      // Your JavaScript is unchanged ...
+      let display = document.getElementById('display');
+      let currentInput = '';
+      const operators = ['+', '-', '*', '/', '%'];
+
+      function append(value) {
+        if (operators.includes(value)) {
+          if (currentInput === '' || operators.includes(currentInput.slice(-1)))
+            return;
+        }
+        if (value === '.') {
+          let parts = currentInput.split(/[\+\-\*\/%]/);
+          let lastPart = parts[parts.length - 1];
+          if (lastPart.includes('.')) return;
+        }
+        if (display.value === '0' && value !== '.') {
+          currentInput = value;
+        } else {
+          currentInput += value;
+        }
+        display.value = currentInput;
+      }
+
+      function clearDisplay() {
+        currentInput = '';
+        display.value = '0';
+      }
+
+      function backspace() {
+        if (currentInput.length > 0) {
+          currentInput = currentInput.slice(0, -1);
+          display.value = currentInput || '0';
+        }
+      }
+
+      function calculate() {
+        try {
+          if (/\/0(?!\.)/.test(currentInput)) {
+            display.value = 'Error: ÷0';
+            currentInput = '';
+            return;
+          }
+          let result = eval(currentInput.replace('%', '/100'));
+          display.value = result;
+          saveToHistory(currentInput, result);
+          currentInput = result.toString();
+        } catch (error) {
+          display.value = 'Error';
+          currentInput = '';
+        }
+      }
+
+      function saveToHistory(expression, result) {
+        let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+        history.push({ expression, result });
+        localStorage.setItem('calcHistory', JSON.stringify(history));
+        renderHistory();
+      }
+
+      function renderHistory() {
+        let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+        let historyList = document.getElementById('historyList');
+        historyList.innerHTML = '';
+        history.forEach((item, index) => {
+          let li = document.createElement('li');
+          li.style =
+            'padding:5px 0 5px 0;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:center;';
+          li.innerHTML = `
+      <span>${item.expression} = ${item.result}</span>
+      <div>
+        <button onclick="editHistory(${index})" style="padding:5px 10px;font-size:12px;border:none;background:#007bff;color:#fff;border-radius:4px;margin-right:5px;">Edit</button>
+        <button onclick="deleteHistory(${index})" style="padding:5px 10px;font-size:12px;border:none;background:#dc3545;color:#fff;border-radius:4px;">Delete</button>
+      </div>
+    `;
+          historyList.appendChild(li);
+        });
+      }
+
+      function editHistory(index) {
+        let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+        currentInput = history[index].expression;
+        display.value = currentInput;
+      }
+
+      function deleteHistory(index) {
+        let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+        history.splice(index, 1);
+        localStorage.setItem('calcHistory', JSON.stringify(history));
+        renderHistory();
+      }
+
+      function clearHistory() {
+        localStorage.removeItem('calcHistory');
+        renderHistory();
+      }
+
+      // Keyboard support
+      document.addEventListener('keydown', (e) => {
+        if (!isNaN(e.key) || operators.includes(e.key) || e.key === '.') {
+          e.preventDefault();
+          append(e.key);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          calculate();
+        } else if (e.key === 'Backspace') {
+          e.preventDefault();
+          backspace();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          clearDisplay();
+        } else if (e.key === 'Tab') {
+          e.preventDefault(); // Stop focus change
+          clearDisplay(); // Clear the display
+        }
+      });
+      window.onload = renderHistory;
+    </script>
+  </body>
 </html>
